@@ -1,0 +1,18 @@
+clustername: ""
+namespace: ""
+
+provider:
+  name: "aws"
+  imageType: "c5.2xlarge"
+  worker_zones:
+    - "eu-west-1b"
+  purpose: "evaluation"
+  floatingPoolSuffix: ""
+  region: "eu-west-1"
+  kubernetes:
+    version:
+
+secretName: ""
+hibernation:
+  enabled: false
+  schedules: []

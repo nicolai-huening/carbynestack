@@ -7,11 +7,13 @@
 
 import * as cdktf from "cdktf";
 import LocalKindStack from "./stacks/local-kind-stack";
-
+import KubernetesStack from "./stacks/kubernetes-stack";
+import GardenerStack from "./stacks/gardener-stack";
 const app = new cdktf.App();
 
 // Local stack using KinD (Kubernetes in Docker)
 // eslint-disable-next-line no-new
 new LocalKindStack(app, "local-kind");
-
+new KubernetesStack(app, "kubernetes");
+new GardenerStack(app, "gardener");
 app.synth();

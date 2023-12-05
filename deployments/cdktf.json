@@ -5,7 +5,8 @@
   "sendCrashReports": "false",
   "terraformProviders": [
     "tehcyx/kind@~> 0.2.0",
-    "alon-dotan-starkware/kubectl@~> 1.11.2"
+    "alon-dotan-starkware/kubectl@~> 1.11.2",
+    "hashicorp/dns@~>3.3.2"
   ],
   "terraformModules": [],
   "context": {

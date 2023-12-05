@@ -36,6 +36,7 @@ In the `./deployments` folder:
 Supported providers include:
 
 - `local-kind`: Local deployment using Kind (Kubernetes in Docker).
+- `gardener`: Remote deployment on [gardener](https://github.com/gardener/gardener) managed kubernetes clusters. (currently tested with AWS)
 
 ## Destroy and Clean Up
 

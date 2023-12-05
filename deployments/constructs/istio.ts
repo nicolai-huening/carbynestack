@@ -9,6 +9,8 @@ import { Construct } from "constructs";
 import * as cdktf from "cdktf";
 import * as kubernetes from "@cdktf/provider-kubernetes";
 import * as helm from "@cdktf/provider-helm";
+import { DataDnsARecordSet } from "../.gen/providers/dns/data-dns-a-record-set";
+import { Fn } from "cdktf";
 
 export interface IstioConfig {
   idPostfix?: string;
@@ -19,6 +21,7 @@ export interface IstioConfig {
 
 export class Istio extends Construct {
   public ingressIP: string;
+  public ingressHostname: string;
   public istioIngressGatewayService: kubernetes.dataKubernetesService.DataKubernetesService;
 
   constructor(scope: Construct, name: string, config: IstioConfig) {
@@ -94,11 +97,11 @@ export class Istio extends Construct {
           { name: `service.ports[${index}].port`, value: port.port },
           ...(port.targetPort !== undefined
             ? [
-                {
-                  name: `service.ports[${index}].targetPort`,
-                  value: port.targetPort,
-                },
-              ]
+              {
+                name: `service.ports[${index}].targetPort`,
+                value: port.targetPort,
+              },
+            ]
             : []),
         ]),
       },
@@ -118,15 +121,42 @@ export class Istio extends Construct {
         },
       );
 
-    this.ingressIP = new cdktf.TerraformOutput(
+    this.ingressHostname = new cdktf.TerraformOutput(
       this,
-      `ingress-ip${config.idPostfix}`,
+      `ingress-hostname${config.idPostfix}`,
       {
         value: this.istioIngressGatewayService.status
           .get(0)
           .loadBalancer.get(0)
-          .ingress.get(0).ip,
+          .ingress.get(0).hostname
       },
     ).value;
+
+    // On AWS only hostname is provided, resolve to get public IP
+    if (this.ingressHostname) {
+      const ips = new DataDnsARecordSet(this, "istio-lb-hostname", {
+        dependsOn: [...config.dependsOn, istioIngressGateway, this.istioIngressGatewayService],
+        host: this.ingressHostname
+      }).addrs;
+      this.ingressIP = Fn.element(ips, 0)
+
+      new cdktf.TerraformOutput(
+        this,
+        `ingress-ip-from-dns${config.idPostfix}`,
+        {
+          value: this.ingressIP
+        });
+    } else {
+      this.ingressIP = new cdktf.TerraformOutput(
+        this,
+        `ingress-ip${config.idPostfix}`,
+        {
+          value: this.istioIngressGatewayService.status
+            .get(0)
+            .loadBalancer.get(0)
+            .ingress.get(0).ip,
+        },
+      ).value;
+    }
   }
 }

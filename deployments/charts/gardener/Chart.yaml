@@ -1,0 +1,7 @@
+apiVersion: v2
+name: gardener-cluster
+version: 1.0.0
+description: Gardener cluster helmchart
+maintainers:
+- name: Nicolai Huening
+  email: nicolai-huening@sap.com

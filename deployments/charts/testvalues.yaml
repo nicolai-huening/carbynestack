@@ -1,0 +1,11 @@
+clustername: ""
+namespace: "garden-carbyne"
+
+secretName: "my-aws-gardener-secret-2023"
+hibernation:
+  enabled: false
+  schedules:
+    - start: '00 17 * * 1,2,3,4,5'
+      location: Europe/Berlin
+kubernetes:
+  version: 1.27.6

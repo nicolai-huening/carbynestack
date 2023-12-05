@@ -13,7 +13,7 @@ import { Istio } from "./istio";
 import { Knative } from "./knative";
 
 export interface VCPConfig {
-  lbSubnet: string;
+  lbSubnet?: string;
   kubernetesProvider: cdktf.TerraformProvider;
   kubectlProvider: cdktf.TerraformProvider;
   helmProvider: cdktf.TerraformProvider;
@@ -21,29 +21,30 @@ export interface VCPConfig {
 }
 
 export class VCP extends Construct {
-  public metalLB: MetalLB;
+  public metalLB?: MetalLB;
   public istio: Istio;
   public knative: Knative;
   public postgres: helm.release.Release;
 
-  constructor(scope: Construct, name: string, config: VCPConfig) {
+  constructor(scope: Construct, name: string, config: VCPConfig, addMetalLb: boolean = true) {
     super(scope, name);
 
     // metallb
-
-    this.metalLB = new MetalLB(this, `metal-lb`, {
-      idPostfix: ``,
-      subnet: config.lbSubnet,
-      kubernetesProvider: config.kubernetesProvider,
-      kubectlProvider: config.kubectlProvider,
-      helmProvider: config.helmProvider,
-    });
+    if (addMetalLb) {
+      this.metalLB = new MetalLB(this, `metal-lb`, {
+        idPostfix: ``,
+        subnet: config.lbSubnet,
+        kubernetesProvider: config.kubernetesProvider,
+        kubectlProvider: config.kubectlProvider,
+        helmProvider: config.helmProvider,
+      });
+    }
 
     // istio
 
     this.istio = new Istio(this, `istio`, {
       idPostfix: ``,
-      dependsOn: [this.metalLB.metalLB, this.metalLB.ipAddressPool],
+      dependsOn: this.metalLB !== undefined ?[this.metalLB.metalLB, this.metalLB.ipAddressPool]: [],
       kubernetesProvider: config.kubernetesProvider,
       helmProvider: config.helmProvider,
     });
@@ -61,7 +62,7 @@ export class VCP extends Construct {
     // postgres operator
 
     this.postgres = new helm.release.Release(this, `postgres-operator`, {
-      dependsOn: [this.metalLB.metalLB],
+      dependsOn: this.metalLB !== undefined ? [this.metalLB.metalLB] : [],
       provider: config.helmProvider,
       name: "postgres-operator",
       chart: "postgres-operator",
