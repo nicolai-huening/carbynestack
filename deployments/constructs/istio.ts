@@ -133,7 +133,7 @@ export class Istio extends Construct {
     ).value;
 
     // On AWS only hostname is provided, resolve to get public IP
-    if (this.ingressHostname) {
+    if (this.ingressHostname && this.ingressHostname !== "") {
       const ips = new DataDnsARecordSet(this, "istio-lb-hostname", {
         dependsOn: [...config.dependsOn, istioIngressGateway, this.istioIngressGatewayService],
         host: this.ingressHostname
