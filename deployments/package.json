@@ -21,10 +21,10 @@
     "node": ">=14.0"
   },
   "dependencies": {
-    "@cdktf/provider-helm": "7.0.0",
-    "@cdktf/provider-http": "^6.0.0",
-    "@cdktf/provider-kubernetes": "8.0.0",
-    "cdktf": "^0.17.1",
+    "@cdktf/provider-helm": "10.0.0",
+    "@cdktf/provider-http": "^9.0.0",
+    "@cdktf/provider-kubernetes": "11.0.0",
+    "cdktf": "^0.20.0",
     "constructs": "^10.2.1"
   },
   "devDependencies": {

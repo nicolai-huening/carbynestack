@@ -14,7 +14,6 @@ import * as kind from "../.gen/providers/kind";
 import * as http from "@cdktf/provider-http";
 import { CarbyneStack } from "../constructs/carbyne-stack";
 import { VCP } from "../constructs/vcp";
-import { DnsProvider } from "../.gen/providers/dns/provider";
 
 export default class LocalKindStack extends cdktf.TerraformStack {
   // eslint-disable-next-line complexity
@@ -24,10 +23,6 @@ export default class LocalKindStack extends cdktf.TerraformStack {
     const kindProvider = new kind.provider.KindProvider(this, "kind-provider");
 
     const dependables: cdktf.ITerraformDependable[] = [];
-
-    // DNS provider to resolve aws load-balancer hostname
-    new DnsProvider(this, "dns-provider", {
-    });
 
     for (let i = 1; i <= 2; i++) {
       const kindCluster = new kind.cluster.Cluster(this, `kind-${i}`, {

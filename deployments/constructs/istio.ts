@@ -6,6 +6,7 @@
  */
 
 import { Construct } from "constructs";
+import { Resource } from "../.gen/providers/null/resource";
 import * as cdktf from "cdktf";
 import * as kubernetes from "@cdktf/provider-kubernetes";
 import * as helm from "@cdktf/provider-helm";
@@ -123,6 +124,7 @@ export class Istio extends Construct {
 
     // On AWS only hostname is provided, resolve to get public IP
     if (config.useHostname) {
+
       let ingressHostname = new cdktf.TerraformOutput(
         this,
         `ingress-hostname${config.idPostfix}`,
@@ -133,8 +135,24 @@ export class Istio extends Construct {
             .ingress.get(0).hostname
         },
       ).value;
-      const ips = new DataDnsARecordSet(this, "istio-lb-hostname", {
+
+      // Wait for hostname and then 5 minutes to make sure an IP-Address was assigned.
+      let waitResource = new Resource(this, "wait-for-hostname", {
         dependsOn: [...config.dependsOn, istioIngressGateway, this.istioIngressGatewayService],
+        triggers: {
+            cluster_hostname: ingressHostname,
+        },
+        provisioners: [
+          {
+            type: "local-exec",
+            command: "sleep 300"
+          }
+        ],
+      });
+
+
+      const ips = new DataDnsARecordSet(this, "istio-lb-hostname", {
+        dependsOn: [...config.dependsOn, istioIngressGateway, this.istioIngressGatewayService, waitResource],
         host: ingressHostname
       }).addrs;
       this.ingressIP = Fn.element(ips, 0)

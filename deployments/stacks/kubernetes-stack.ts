@@ -14,6 +14,7 @@ import * as cdktf from "cdktf";
 import { CarbyneStack } from "../constructs/carbyne-stack";
 import { VCP } from "../constructs/vcp";
 import { DnsProvider } from "../.gen/providers/dns/provider";
+import { NullProvider } from "../.gen/providers/null/provider";
 
 export default class KubernetesStack extends cdktf.TerraformStack {
   constructor(scope: Construct, id: string, kubeconfigPath: string = "~/.kube/config") {
@@ -24,6 +25,8 @@ export default class KubernetesStack extends cdktf.TerraformStack {
     // First create clusters with ingress to get the public ips.
     new DnsProvider(this, "dns-provider", {
     });
+
+    new NullProvider(this, "null-provider", {});
 
     for (let i = 1; i <= 2; i++) {
       const kubernetesProvider = new kubernetes.provider.KubernetesProvider(
