@@ -26,7 +26,7 @@ export class VCP extends Construct {
   public knative: Knative;
   public postgres: helm.release.Release;
 
-  constructor(scope: Construct, name: string, config: VCPConfig, addMetalLb: boolean = true) {
+  constructor(scope: Construct, name: string, config: VCPConfig, addMetalLb: boolean = true, useLbHostname: boolean = false) {
     super(scope, name);
 
     // metallb
@@ -47,6 +47,7 @@ export class VCP extends Construct {
       dependsOn: this.metalLB !== undefined ?[this.metalLB.metalLB, this.metalLB.ipAddressPool]: [],
       kubernetesProvider: config.kubernetesProvider,
       helmProvider: config.helmProvider,
+      useHostname: useLbHostname,
     });
 
     // knative operator

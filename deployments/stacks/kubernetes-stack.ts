@@ -72,7 +72,7 @@ export default class KubernetesStack extends cdktf.TerraformStack {
         kubectlProvider,
         helmProvider,
         httpProvider,
-      },false);
+      },false,true);
 
       dependables.push(
         ...[

@@ -17,11 +17,11 @@ export interface IstioConfig {
   dependsOn: cdktf.ITerraformDependable[];
   helmProvider?: cdktf.TerraformProvider;
   kubernetesProvider?: cdktf.TerraformProvider;
+  useHostname?: boolean;
 }
 
 export class Istio extends Construct {
   public ingressIP: string;
-  public ingressHostname: string;
   public istioIngressGatewayService: kubernetes.dataKubernetesService.DataKubernetesService;
 
   constructor(scope: Construct, name: string, config: IstioConfig) {
@@ -121,22 +121,21 @@ export class Istio extends Construct {
         },
       );
 
-    this.ingressHostname = new cdktf.TerraformOutput(
-      this,
-      `ingress-hostname${config.idPostfix}`,
-      {
-        value: this.istioIngressGatewayService.status
-          .get(0)
-          .loadBalancer.get(0)
-          .ingress.get(0).hostname
-      },
-    ).value;
-
     // On AWS only hostname is provided, resolve to get public IP
-    if (this.ingressHostname && this.ingressHostname !== "") {
+    if (config.useHostname) {
+      let ingressHostname = new cdktf.TerraformOutput(
+        this,
+        `ingress-hostname${config.idPostfix}`,
+        {
+          value: this.istioIngressGatewayService.status
+            .get(0)
+            .loadBalancer.get(0)
+            .ingress.get(0).hostname
+        },
+      ).value;
       const ips = new DataDnsARecordSet(this, "istio-lb-hostname", {
         dependsOn: [...config.dependsOn, istioIngressGateway, this.istioIngressGatewayService],
-        host: this.ingressHostname
+        host: ingressHostname
       }).addrs;
       this.ingressIP = Fn.element(ips, 0)
 
